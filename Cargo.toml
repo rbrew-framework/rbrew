@@ -1,0 +1,22 @@
+[package]
+name = "rbrew"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+argp = "0.3.0"
+json = "0.12.4"
+
+[workspace]
+members = [
+  "lib/rbrew-gc", 
+
+  "shared",
+  "shared/rbrew-shared-types",
+  "shared/rbrew-shared-macros",
+]
+
+[workspace.dependencies]
+rbrew-shared = { path = "shared" }
+
+spin = "0.9.8"

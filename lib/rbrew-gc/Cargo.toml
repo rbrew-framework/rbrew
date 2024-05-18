@@ -1,0 +1,9 @@
+[package]
+name = "rbrew-gc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rbrew-shared = { workspace = true }
+
+spin = { workspace = true }

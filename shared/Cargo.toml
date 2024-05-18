@@ -1,0 +1,8 @@
+[package]
+name = "rbrew-shared"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rbrew-shared-types = { path = "rbrew-shared-types" }
+rbrew-shared-macros = { path = "rbrew-shared-macros" }
