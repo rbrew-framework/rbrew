@@ -2,6 +2,9 @@
 name = "rbrew"
 version = "0.1.0"
 edition = "2021"
+incluide = [
+  "targets/*"
+]
 
 [dependencies]
 argp = "0.3.0"
