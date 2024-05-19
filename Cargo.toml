@@ -2,6 +2,7 @@
 name = "cargo-rbrew"
 version = "0.0.4"
 edition = "2021"
+repository = "https://github.com/rbrew-framework/rbrew"
 description = "work in progress"
 build = "build.rs"
 default-run = "local-rbrew"
