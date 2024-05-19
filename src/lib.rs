@@ -5,7 +5,7 @@
 
 #![feature(exitcode_exit_method)]
 
-use argp::{FromArgValue, FromArgs, HelpStyle};
+use argp::{FromArgValue, FromArgs};
 use std::{
     ffi::OsStr,
     fmt::Display,
@@ -32,6 +32,12 @@ mod fields {
         pub fn target_json_name(self) -> &'static str {
             match self {
                 Platform::Gamecube => "gamecube.json",
+            }
+        }
+
+        pub fn config_toml_name(self) -> &'static str {
+            match self {
+                Platform::Gamecube => "gamecube.toml",
             }
         }
     }
@@ -168,11 +174,7 @@ mod util {
         Command::new("cargo")
     }
 
-    pub fn rbrew_target_file(path: &str) -> Result<PathBuf, std::io::Error> {
-        let path = PathBuf::from(format!(
-            "{}/{path}",
-            include_str!(concat!(env!("OUT_DIR"), "/target_path.inc"))
-        ));
+    fn try_path(path: PathBuf) -> Result<PathBuf, std::io::Error> {
         if path.exists() {
             Ok(path)
         } else {
@@ -182,11 +184,23 @@ mod util {
             ))
         }
     }
+
+    pub fn rbrew_target_file(name: &str) -> Result<PathBuf, std::io::Error> {
+        try_path(PathBuf::from(format!(
+            "{}/{name}",
+            include_str!(concat!(env!("OUT_DIR"), "/target_path.inc"))
+        )))
+    }
+
+    pub fn rbrew_config_file(name: &str) -> Result<PathBuf, std::io::Error> {
+        try_path(PathBuf::from(format!(
+            "{}/{name}",
+            include_str!(concat!(env!("OUT_DIR"), "/config_path.inc"))
+        )))
+    }
 }
 
 pub fn run(cli: RbrewCli) {
-    let cli: RbrewCli = argp::cargo_parse_args_or_exit();
-
     match cli.subcommand {
         RbrewCliSub::Build(args) => build(args, cli.verbosity),
         RbrewCliSub::Tools(args) => tools(args, cli.verbosity),
@@ -215,7 +229,16 @@ fn build(args: RbrewCliSubBuild, verbosity: Verbosity) {
         )),
     };
 
-    cmd.arg(format!("--target={}", target_json.display()));
+    let target_config_ident = args.platform.config_toml_name();
+    let target_config = match util::rbrew_config_file(target_config_ident) {
+        Ok(ok) => ok,
+        Err(err) => graceful_error_exit(format!(
+            "failed to find the config toml file for the platform: {err}"
+        )),
+    };
+
+    // cmd.arg(format!("--target={}", target_json.display()));
+    cmd.arg(format!("--config={}", target_config.display()));
 
     for option in &args.custom_options {
         cmd.arg(option);
@@ -244,7 +267,7 @@ fn build(args: RbrewCliSubBuild, verbosity: Verbosity) {
     }
 
     let output = output_cmd
-        .arg("-message-format=json")
+        .arg("--message-format=json")
         .arg("--quiet")
         .output()
         .unwrap();
@@ -253,32 +276,15 @@ fn build(args: RbrewCliSubBuild, verbosity: Verbosity) {
     }
 
     let utf8 = String::from_utf8(output.stdout).expect("expected valid UTF-8");
-    let mut iter = utf8.chars().peekable();
     let mut jsons = vec![];
-    loop {
-        let mut i = 0usize;
-        if iter.peek().is_none() {
-            break;
-        }
-        let string: String = iter
-            .by_ref()
-            .take_while(|c| {
-                match c {
-                    '{' => i += 1,
-                    '}' => i = i.saturating_sub(1),
-                    _ => {}
-                }
-                i > 0
-            })
-            .collect();
-        jsons.push(json::parse(&string).expect("expected valid json"))
+    for line in utf8.lines() {
+        jsons.push(json::parse(line).expect("expected valid json"))
     }
 
     let mut output_executable = vec![];
     for json in jsons {
         match json {
             json::JsonValue::Object(object) => {
-                // if let Some(executable) = object.get() {}
                 if let Some(executable) = object.get("executable") {
                     if let Some(str) = executable.as_str() {
                         output_executable.push(str.to_string())
@@ -302,6 +308,10 @@ fn build(args: RbrewCliSubBuild, verbosity: Verbosity) {
 
         let mut output = output_dir.join(output_name);
         output.set_extension(args.output_type.extension_name());
+
+        if verbosity.should_output(Verbosity::Normal) {
+            println!("output file: {}", output.display());
+        }
 
         match args.output_type {
             fields::OutputType::Elf => {

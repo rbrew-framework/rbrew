@@ -1,6 +1,6 @@
 [package]
 name = "cargo-rbrew"
-version = "0.0.4"
+version = "0.0.5"
 edition = "2021"
 repository = "https://github.com/rbrew-framework/rbrew"
 description = "work in progress"
@@ -8,7 +8,8 @@ build = "build.rs"
 default-run = "local-rbrew"
 license-file = "LICENSE"
 incluide = [
-  "targets/*"
+  "targets/*",
+  "configs/*",
 ]
 
 [lib]
@@ -33,9 +34,12 @@ members = [
   "shared",
   "shared/rbrew-shared-types",
   "shared/rbrew-shared-macros",
+
+  "examples/*"
 ]
 
 [workspace.dependencies]
 rbrew-shared = { path = "shared" }
+rbrew-gc = { path = "lib/rbrew-gc" }
 
 spin = "0.9.8"

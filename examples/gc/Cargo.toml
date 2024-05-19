@@ -1,0 +1,11 @@
+[package]
+name = "rbrew-gc-examples"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "simple"
+path = "simple/main.rs"
+
+[dependencies]
+# rbrew-gc = { workspace = true }
