@@ -31,7 +31,7 @@ mod fields {
     impl Platform {
         pub fn target_json_name(self) -> &'static str {
             match self {
-                Platform::Gamecube => "rbrew_gamecube.json",
+                Platform::Gamecube => "gamecube.json",
             }
         }
     }
@@ -168,8 +168,11 @@ mod util {
         Command::new("cargo")
     }
 
-    pub fn rbrew_file(path: String) -> Result<PathBuf, std::io::Error> {
-        let path = PathBuf::from(path);
+    pub fn rbrew_target_file(path: &str) -> Result<PathBuf, std::io::Error> {
+        let path = PathBuf::from(format!(
+            "{}/{path}",
+            include_str!("../generated/target_path.inc")
+        ));
         if path.exists() {
             Ok(path)
         } else {
@@ -206,7 +209,7 @@ fn build(args: RbrewCliSubBuild, verbosity: Verbosity) {
     }
 
     let target_json_ident = args.platform.target_json_name();
-    let target_json = match util::rbrew_file(format!("targets/{target_json_ident}")) {
+    let target_json = match util::rbrew_target_file(target_json_ident) {
         Ok(ok) => ok,
         Err(err) => graceful_error_exit(format!(
             "failed to find the target json file for the platform: {err}"
