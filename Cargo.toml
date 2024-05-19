@@ -1,6 +1,6 @@
 [package]
 name = "cargo-rbrew"
-version = "0.0.3"
+version = "0.0.4"
 edition = "2021"
 description = "work in progress"
 build = "build.rs"
