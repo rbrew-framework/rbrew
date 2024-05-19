@@ -4,10 +4,22 @@ version = "0.0.3"
 edition = "2021"
 description = "work in progress"
 build = "build.rs"
+default-run = "local-rbrew"
 license-file = "LICENSE"
 incluide = [
   "targets/*"
 ]
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "cargo-rbrew"
+path = "bin/cargo.rs"
+
+[[bin]]
+name = "local-rbrew"
+path = "bin/local.rs"
 
 [dependencies]
 argp = "0.3.0"

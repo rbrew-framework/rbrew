@@ -152,7 +152,7 @@ impl FromArgValue for Verbosity {
 
 /// The rbrew command.
 #[derive(FromArgs)]
-struct RbrewCli {
+pub struct RbrewCli {
     /// Determines the verbosity of the stdout output.
     #[argp(option, default = "Default::default()")]
     verbosity: Verbosity,
@@ -184,9 +184,8 @@ mod util {
     }
 }
 
-fn main() {
-    let cli: RbrewCli = argp::parse_args_or_exit(&HelpStyle::default());
-    // let cli: RbrewCli = argp::cargo_parse_args_or_exit();
+pub fn run(cli: RbrewCli) {
+    let cli: RbrewCli = argp::cargo_parse_args_or_exit();
 
     match cli.subcommand {
         RbrewCliSub::Build(args) => build(args, cli.verbosity),
