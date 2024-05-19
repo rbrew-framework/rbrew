@@ -171,7 +171,7 @@ mod util {
     pub fn rbrew_target_file(path: &str) -> Result<PathBuf, std::io::Error> {
         let path = PathBuf::from(format!(
             "{}/{path}",
-            include_str!("../generated/target_path.inc")
+            include_str!(concat!(env!("OUT_DIR"), "/target_path.inc"))
         ));
         if path.exists() {
             Ok(path)
@@ -225,7 +225,6 @@ fn build(args: RbrewCliSubBuild, verbosity: Verbosity) {
     let mut status_cmd = Command::new(cmd.get_program());
     status_cmd.args(cmd.get_args());
     status_cmd.envs(cmd.get_envs().map(|env| (env.0, env.1.unwrap_or_default())));
-    status_cmd.current_dir(cmd.get_current_dir().unwrap());
 
     let mut output_cmd = cmd;
 
